@@ -12,12 +12,14 @@
   </header>
 
   <main>
+    <!-- Listar todos os filmes -->
     <section id="lista">
       <h2>Todos os Filmes</h2>
       <button id="carregar">Carregar Filmes</button>
       <div id="filmes" class="grid"></div>
     </section>
 
+    <!-- Buscar filme -->
     <section id="busca">
       <h2>Buscar Filme por Nome</h2>
       <input type="text" id="nomeBusca" placeholder="Ex: Totoro, Spirited Away...">
@@ -35,168 +37,239 @@
       <button id="filtrar">Filtrar</button>
       <div id="resultadoFiltro" class="grid"></div>
     </section>
+
+    <section id="logs">
+      <h2>Logs de Consumo da API</h2>
+      <button id="verLogs">Ver Logs</button>
+      <div id="listaLogs"></div>
+    </section>
   </main>
 
   <footer>
-    <p><strong>Pedro</strong> — Desenvolvimento Web</p>
+    <p>Pedro — Desenvolvimento Web</p>
   </footer>
-
-  <script src="script.js"></script>
 
   <style>
     body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #fafafa;
-  color: #333;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
+      font-family: 'Segoe UI', sans-serif;
+      background: #fafafa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
 
-header {
-  background: #0a9396;
-  color: white;
-  padding: 20px 0;
-}
+    header {
+      background: #0a9396;
+      color: white;
+      padding: 20px 0;
+    }
 
-h1 {
-  margin: 0;
-}
+    h1 {
+      margin: 0;
+    }
 
-main {
-  padding: 20px;
-}
+    main {
+      padding: 20px;
+    }
 
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-}
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
 
-.card {
-  background: white;
-  border-radius: 10px;
-  padding: 10px;
-  width: 200px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      width: 200px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
 
-.card img {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  border-radius: 10px;
-}
+    .card img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
 
-button, input, select {
-  padding: 8px;
-  margin: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
+    button, input, select {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
 
-button {
-  background: #0a9396;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
+    button {
+      background: #0a9396;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
 
-button:hover {
-  background: #94d2bd;
-  color: #000;
-}
+    button:hover {
+      background: #94d2bd;
+      color: #000;
+    }
 
-footer {
-  background: #0a9396;
-  color: white;
-  padding: 10px;
-  margin-top: 30px;
-}
+    footer {
+      background: #0a9396;
+      color: white;
+      padding: 10px;
+      margin-top: 30px;
+    }
 
-@media (max-width: 600px) {
-  .grid {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
+    @media (max-width: 600px) {
+      .grid {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
   </style>
 
   <script>
-    // 1️⃣ Listar todos os filmes
-document.getElementById('carregar').addEventListener('click', async () => {
-  const container = document.getElementById('filmes');
-  container.innerHTML = "Carregando...";
+    const MATRICULA = "445046";
+    const API_NOME = "StudioGhibliAPI";
 
-  const res = await fetch('https://ghibliapi.vercel.app/films');
-  const data = await res.json();
+    async function registrarLog(metodo, resultado) {
+      try {
+        const url = `https://www.piway.com.br/unoesc/api/inserir/log/${MATRICULA}/${API_NOME}/${encodeURIComponent(metodo)}/${encodeURIComponent(resultado)}`;
+        const res = await fetch(url);
+        const data = await res.text();
+        console.log("Log registrado:", data);
+      } catch (erro) {
+        console.error("Erro ao registrar log:", erro);
+      }
+    }
 
-  container.innerHTML = '';
-  data.slice(0, 10).forEach(filme => {
-    container.innerHTML += `
-      <div class="card">
-        <img src="${filme.image}" alt="${filme.title}">
-        <h3>${filme.title}</h3>
-        <p><strong>Diretor:</strong> ${filme.director}</p>
-        <p><strong>Ano:</strong> ${filme.release_date}</p>
-      </div>`;
-  });
-});
+    async function exibirLogs() {
+      const container = document.getElementById("listaLogs");
+      container.innerHTML = "Carregando logs...";
 
-// 2️⃣ Buscar filme por nome
-document.getElementById('buscar').addEventListener('click', async () => {
-  const nome = document.getElementById('nomeBusca').value.trim().toLowerCase();
-  const resultado = document.getElementById('resultadoBusca');
+      try {
+        const res = await fetch(`https://www.piway.com.br/unoesc/api/logs/${MATRICULA}`);
+        const data = await res.json();
 
-  if (!nome) {
-    resultado.innerHTML = "Digite o nome de um filme.";
-    return;
-  }
+        if (!Array.isArray(data)) {
+          container.innerHTML = "Nenhum log encontrado ou pode ser a matrícula inválida";
+          return;
+        }
 
-  const res = await fetch('https://ghibliapi.vercel.app/films');
-  const data = await res.json();
+        container.innerHTML = "";
+        data.forEach(log => {
+          container.innerHTML += `
+            <div class="card">
+              <p><strong>ID:</strong> ${log.id}</p>
+              <p><strong>API:</strong> ${log.api}</p>
+              <p><strong>Método:</strong> ${log.metodo}</p>
+              <p><strong>Resultado:</strong> ${log.resultado}</p>
+              <button onclick="excluirLog(${log.id})">Excluir</button>
+            </div>
+          `;
+        });
+      } catch (erro) {
+        container.innerHTML = "Erro ao carregar as logs";
+        console.error(erro);
+      }
+    }
 
-  const filme = data.find(f => f.title.toLowerCase().includes(nome));
+    async function excluirLog(id) {
+      try {
+        const url = `https://www.piway.com.br/unoesc/api/excluir/log/${id}/aluno/${MATRICULA}`;
+        const res = await fetch(url);
+        const data = await res.text();
+        alert(data);
+        exibirLogs();
+      } catch (erro) {
+        alert("Erro ao excluir log");
+      }
+    }
 
-  if (!filme) {
-    resultado.innerHTML = "Filme não encontrado 😢";
-    return;
-  }
+    document.getElementById("verLogs").addEventListener("click", exibirLogs);
 
-  resultado.innerHTML = `
-    <div class="card">
-      <img src="${filme.image}" alt="${filme.title}">
-      <h3>${filme.title}</h3>
-      <p><strong>Diretor:</strong> ${filme.director}</p>
-      <p><strong>Descrição:</strong> ${filme.description.substring(0, 150)}...</p>
-    </div>`;
-});
+    //Listar todos os filmes
+    document.getElementById('carregar').addEventListener('click', async () => {
+      const container = document.getElementById('filmes');
+      container.innerHTML = "Carregando...";
 
-// 3️⃣ Filtrar por diretor
-document.getElementById('filtrar').addEventListener('click', async () => {
-  const diretor = document.getElementById('diretorSelect').value;
-  const container = document.getElementById('resultadoFiltro');
-  container.innerHTML = "Carregando...";
+      const res = await fetch('https://ghibliapi.vercel.app/films');
+      const data = await res.json();
 
-  const res = await fetch('https://ghibliapi.vercel.app/films');
-  const data = await res.json();
+      container.innerHTML = '';
+      data.slice(0, 10).forEach(filme => {
+        container.innerHTML += `
+          <div class="card">
+            <img src="${filme.image}" alt="${filme.title}">
+            <h3>${filme.title}</h3>
+            <p><strong>Diretor:</strong> ${filme.director}</p>
+            <p><strong>Ano:</strong> ${filme.release_date}</p>
+          </div>
+        `;
+      });
 
-  const filtrados = data.filter(f => f.director === diretor);
+      await registrarLog("Listar Filmes", `${data.length} filmes carregados`);
+    });
 
-  container.innerHTML = '';
-  filtrados.forEach(filme => {
-    container.innerHTML += `
-      <div class="card">
-        <img src="${filme.image}" alt="${filme.title}">
-        <h4>${filme.title}</h4>
-        <p>${filme.release_date}</p>
-      </div>`;
-  });
-});
+    //Buscar filme por nome
+    document.getElementById('buscar').addEventListener('click', async () => {
+      const nome = document.getElementById('nomeBusca').value.trim().toLowerCase();
+      const resultado = document.getElementById('resultadoBusca');
 
+      if (!nome) {
+        resultado.innerHTML = "Digite o nome de um filme";
+        return;
+      }
+
+      const res = await fetch('https://ghibliapi.vercel.app/films');
+      const data = await res.json();
+
+      const filme = data.find(f => f.title.toLowerCase().includes(nome));
+
+      if (!filme) {
+        resultado.innerHTML = "Filme não encontrado";
+        await registrarLog("Buscar Filme", "Filme não encontrado");
+        return;
+      }
+
+      resultado.innerHTML = `
+        <div class="card">
+          <img src="${filme.image}" alt="${filme.title}">
+          <h3>${filme.title}</h3>
+          <p><strong>Diretor:</strong> ${filme.director}</p>
+          <p><strong>Descrição:</strong> ${filme.description.substring(0, 150)}...</p>
+        </div>
+      `;
+
+      await registrarLog("Buscar Filme", `Encontrado: ${filme.title}`);
+    });
+
+    // Filtrar por diretor
+    document.getElementById('filtrar').addEventListener('click', async () => {
+      const diretor = document.getElementById('diretorSelect').value;
+      const container = document.getElementById('resultadoFiltro');
+      container.innerHTML = "Carregando...";
+
+      const res = await fetch('https://ghibliapi.vercel.app/films');
+      const data = await res.json();
+
+      const filtrados = data.filter(f => f.director === diretor);
+
+      container.innerHTML = '';
+      filtrados.forEach(filme => {
+        container.innerHTML += `
+          <div class="card">
+            <img src="${filme.image}" alt="${filme.title}">
+            <h4>${filme.title}</h4>
+            <p>${filme.release_date}</p>
+          </div>
+        `;
+      });
+
+      await registrarLog("Filtrar por Diretor", `${filtrados.length} filmes de ${diretor}`);
+    });
   </script>
 </body>
 </html>
